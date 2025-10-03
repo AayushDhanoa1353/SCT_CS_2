@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pixel Encryption Tool</title>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom styles for better visual experience */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0d1117; /* Dark background */
+            background-color: #0d1117; 
             color: #c9d1d9;
         }
         .card {
@@ -49,7 +47,6 @@
 
         <div class="card p-6 rounded-xl space-y-6">
             
-            <!-- File Input & Key -->
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
                     <label for="imageUpload" class="block text-sm font-medium text-gray-300 mb-2">1. Select Image (.png, .jpg, .gif)</label>
@@ -61,7 +58,6 @@
                 </div>
             </div>
 
-            <!-- Operations -->
             <div class="pt-4 border-t border-gray-700">
                 <label class="block text-lg font-medium text-gray-300 mb-3">3. Choose Operation</label>
                 <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -72,10 +68,8 @@
                 </div>
             </div>
 
-            <!-- Loading Indicator & Status -->
             <div id="statusMessage" class="text-center text-sm font-medium py-2 rounded-lg" style="display: none;"></div>
 
-            <!-- Canvas Area -->
             <div class="pt-6">
                 <h2 class="text-xl font-semibold mb-3">Processed Image (Canvas)</h2>
                 <div id="canvasContainer" class="w-full aspect-video flex justify-center items-center bg-gray-800 rounded-lg">
@@ -89,12 +83,10 @@
     </div>
 
     <script>
-        // Global variables for the canvas context, original image, and key
         let canvas, ctx;
         let originalImage = null;
         let currentImage = null;
 
-        // DOM Elements
         const imageUpload = document.getElementById('imageUpload');
         const xorKeyInput = document.getElementById('xorKey');
         const xorEncryptBtn = document.getElementById('xorEncryptBtn');
@@ -105,7 +97,6 @@
         const loadingIndicator = document.getElementById('loadingIndicator');
         const statusMessage = document.getElementById('statusMessage');
 
-        // Utility to display status messages
         function showStatus(message, type = 'info') {
             statusMessage.textContent = message;
             statusMessage.style.display = 'block';
@@ -125,15 +116,12 @@
         }
 
         function drawImageToCanvas(img) {
-            // Set canvas size based on the image size
             canvas.width = img.width;
             canvas.height = img.height;
             
-            // Draw the image onto the canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0);
 
-            // Hide placeholder and show canvas
             placeholderText.style.display = 'none';
             canvas.style.display = 'block';
             loadingIndicator.style.display = 'none';
@@ -141,31 +129,26 @@
             toggleControls(true);
         }
 
-        // --- Core Pixel Processing Logic ---
-
+    
         function processPixels(imageData, operation, key = 0) {
-            const data = imageData.data; // Uint8ClampedArray: R, G, B, A, R, G, B, A, ...
+            const data = imageData.data; 
 
             for (let i = 0; i < data.length; i += 4) {
                 const rIndex = i;
                 const gIndex = i + 1;
                 const bIndex = i + 2;
-                // i + 3 is the alpha channel, which we leave untouched
 
                 if (operation === 'xor') {
-                    // Apply XOR to R, G, and B channels
                     data[rIndex] = data[rIndex] ^ key;
                     data[gIndex] = data[gIndex] ^ key;
                     data[bIndex] = data[bIndex] ^ key;
                 } else if (operation === 'swap') {
-                    // Simple R <-> B swap: (R, G, B) -> (B, G, R)
                     const originalR = data[rIndex];
                     const originalB = data[bIndex];
-                    data[rIndex] = originalB; // R becomes B
-                    data[bIndex] = originalR; // B becomes R
+                    data[rIndex] = originalB; 
+                    data[bIndex] = originalR; 
                 }
             }
-            // Put the modified data back onto the canvas
             ctx.putImageData(imageData, 0, 0);
         }
 
@@ -175,7 +158,6 @@
                 return;
             }
 
-            // Show loading indicator
             loadingIndicator.style.display = 'block';
             canvas.style.display = 'none';
             toggleControls(false);
@@ -183,7 +165,6 @@
 
             setTimeout(() => {
                 try {
-                    // 1. Get the current image data from the canvas
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     
                     let key = 0;
@@ -195,10 +176,8 @@
                         }
                     }
 
-                    // 2. Process the pixels
                     processPixels(imageData, operation, key);
 
-                    // 3. Update status
                     const action = operation === 'xor' ? 'XOR processed' : 'R/B Swap processed';
                     showStatus(`Image successfully ${action}. Click again to reverse the process!`, 'success');
 
@@ -206,21 +185,18 @@
                     console.error(e);
                     showStatus(`Error during image processing: ${e.message}`, 'error');
                 } finally {
-                    // Restore control visibility
                     loadingIndicator.style.display = 'none';
                     canvas.style.display = 'block';
                     toggleControls(true);
                 }
-            }, 10); // Use a small delay to allow the loading indicator to show
+            }, 10); 
         }
 
-        // --- Event Handlers ---
 
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Show loading
             placeholderText.style.display = 'none';
             loadingIndicator.style.display = 'block';
             statusMessage.style.display = 'none';
@@ -238,7 +214,6 @@
                 };
                 img.onerror = function() {
                     showStatus("Could not load image file.", 'error');
-                    // Reset inputs on failure
                     imageUpload.value = '';
                     placeholderText.style.display = 'block';
                     loadingIndicator.style.display = 'none';
@@ -264,7 +239,7 @@
                 return;
             }
 
-            const dataURL = canvas.toDataURL('image/png'); // Get image data as PNG
+            const dataURL = canvas.toDataURL('image/png'); 
             const a = document.createElement('a');
             a.href = dataURL;
             a.download = 'encrypted_image.png';
@@ -274,17 +249,14 @@
             showStatus("Encrypted image downloaded successfully as encrypted_image.png.", 'success');
         }
 
-        // --- Initialization ---
 
         window.onload = function() {
             canvas = document.getElementById('imageCanvas');
             ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-            // Initially hide the canvas and disable controls
             canvas.style.display = 'none';
             toggleControls(false);
             
-            // Setup Event Listeners
             imageUpload.addEventListener('change', handleImageUpload);
             xorEncryptBtn.addEventListener('click', () => encryptImage('xor'));
             swapEncryptBtn.addEventListener('click', () => encryptImage('swap'));
@@ -294,4 +266,5 @@
     </script>
 
 </body>
+
 </html>
